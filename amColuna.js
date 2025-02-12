@@ -80,15 +80,23 @@ define([
 
       //console.log(layout);
 
-      var numero_de_linhas = layout.qHyperCube.qDataPages[0].qMatrix.lenght;
-      //console.log(numero_de_linhas);
+      var numero_de_linhas = layout.qHyperCube.qDataPages[0].qMatrix.length;
+
+      // console.log("numero de linhas do qMatrix" + "=" + "" + numero_de_linhas);
 
       var dados = [];
       var c = 0;
 
       for (c = 0; c < numero_de_linhas; c++) {
-        console.log(c);
+        dados.push({
+          name: layout.qHyperCube.qDataPages[0].qMatrix[c][0].qText,
+          steps: layout.qHyperCube.qDataPages[0].qMatrix[c][1].qNum,
+          pictureSettings: {
+            src: "https://media.licdn.com/dms/image/v2/D5603AQGOyw0U-nAF0g/profile-displayphoto-shrink_200_200/B56ZSzMhosGQAY-/0/1738173193170?e=1744848000&v=beta&t=uU2iIfYq57Q74PaT-NZgqPY3gOFhxj3FS_8J2Oan1QQ",
+          }
+        });
       }
+
 
       //continue assistindo o video: a partir de 12minutos e 10 segundos https://www.youtube.com/watch?v=7bo9PSWgULA
 
@@ -101,50 +109,7 @@ define([
         // https://www.amcharts.com/docs/v5/concepts/themes/
         root.setThemes([am5themes_Animated.new(root)]);
 
-        var data = [
-          {
-            name: "Monica",
-            steps: 50000,
-            pictureSettings: {
-              src: "../../Extensions/amColuna/monica.jpg",
-            },
-          },
-          {
-            name: "Joey",
-            steps: 35781,
-            pictureSettings: {
-              src: "../../Extensions/amColuna/joey.jpg",
-            },
-          },
-          {
-            name: "Ross",
-            steps: 25464,
-            pictureSettings: {
-              src: "../../Extensions/amColuna/ross.jpg",
-            },
-          },
-          {
-            name: "Phoebe",
-            steps: 18788,
-            pictureSettings: {
-              src: "../../Extensions/amColuna/phoebe.jpg",
-            },
-          },
-          {
-            name: "Rachel",
-            steps: 15465,
-            pictureSettings: {
-              src: "../../Extensions/amColuna/rachel.jpg",
-            },
-          },
-          {
-            name: "Chandler",
-            steps: 11561,
-            pictureSettings: {
-              src: "../../Extensions/amColuna/chandler.jpg",
-            },
-          },
-        ];
+        var data = dados;
 
         // Create chart
         // https://www.amcharts.com/docs/v5/charts/xy-chart/
