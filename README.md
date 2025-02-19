@@ -1,4 +1,4 @@
-**_Ola, Seja bem vindo ao meu projeto de incorporar gráficos do qlik sense_**
+***_Ola, Seja bem vindo ao meu projeto de incorporar gráficos do qlik sense_***
 
 É necessário ter: _Vscode_, _Qlik Sense Desktop_
 
@@ -11,7 +11,7 @@ Nesse projeto irei incorporar um gráfico de barras horizontal, utilizando a bib
 1.1 Criar uma conta no qlik page para acessar o conteúdo.
 
 1.2 Acessar o link para download Qlik Sense Desktop:
-https://community.qlik.com/t5/Download-Qlik-Products/tkb-p/Downloads?_ga=2.75487830.553878946.1697033426-1659817468.1652277878
+<https://community.qlik.com/t5/Download-Qlik-Products/tkb-p/Downloads?_ga=2.75487830.553878946.1697033426-1659817468.1652277878>
 
 1.3 Na pagina que abriu, ir no campo de **_Show Realeases_** ticar a segunda cheklist no **_All releases whith latest patch_** depois ir no campo de Realease e ticar a checklist da ultima atualização dependendo o dia de acesso, que neste caso estou buscando por november de 2024, que é a ultima atualização da patch para download do qlik sense desktop.
 
@@ -280,5 +280,117 @@ Após realizar isso, iremos criar um variavel de array vazio com o nome de dados
       }	
 ```
 
-Feito isso, os dados do qlik sense ja poderam ser aplicados no Gráfico demo AmCharts
+Feito isso, os dados do qlik sense ja poderam ser aplicados no Gráfico demo AmCharts.
 
+Iremos novamente usar o console.log(layout), para ver o que temos nas configurações, neste momento iremos usar as informações que tenham o id de nosso gráfico para que possamos criar mais deles no nosso projeto. Veja que o caminho a ser seguido é layout.qInfo.qId, para que possamos usar o id desse gráfico na extensão.
+
+![alt text](image-17.png)
+
+Para podermos modificar a div usaremos ao inves de chartdiv passaremos o caminho para o id desse gráfico, em seguida criaremos uma class para alterações no css.
+
+![alt text](image-18.png)
+
+css:
+![alt text](image-19.png)
+
+Obs.: importante lembrar que onde estiver chartdiv anteriormente, dever ser alterado para o novo caminho do gráfico utilizando o layout.qInfo.qId, dentro do arquivo de configuração amColuna.
+
+Agora o seu gráfico pode ser usado varias vezes dentro do aplicativo (ou seja, crtl c e crtl v funciona).
+
+Aqui a parte de definition usaremos uma configuração para criar uma opção na configuração da extensão chamada bullet de imagem, essa configuração permitira manipular o gráfico retirando a imagem e incluindo a imagem no gráfico apartir de um checklist dentro das configurações do gráfico do qlik sense no canto direito;
+
+![alt text](image-16.png)
+
+```javascript
+
+definition: {
+      type: "items",
+      component: "accordion",
+      items: {
+        dimensions: {
+          uses: "dimensions",
+          min: 0,
+        },
+        measures: {
+          uses: "measures",
+          min: 0,
+        },
+        sorting: {
+          uses: "sorting",
+        },
+        //aqui é a parte em que iremos adicionar para que possamos utilizar o bullet de imagem 
+        settings: {
+          uses: "settings",
+          items: {
+            MyStringProp: {
+              ref: "bullet",
+              type: "boolean",
+              label: "Bullet Imagem",
+              defaultValue: false
+            }
+          }
+        },
+      }
+    },
+```
+
+Utilizando console.log(layout.bullet), veremos que o bullet no console log aparecera true caso tenha marcado o checklist e false caso ele seja desmarcado:
+
+![alt text](image-20.png)
+
+
+
+também teremos que passar esse caminho do layout.bullet para a função de bullet que tem no arquivo de configuração do amColuna, neste caso utilizaremos uma condição para servir o bullet como no código a baixo:
+
+
+
+```javascript 
+
+
+//neste caso adicionamos o layout.bullet na condição até o final dessa marcação no amchart5
+if (layout.bullet) {
+          //Inicio do bullet
+          series.bullets.push(function (root, series, dataItem) {
+            var bulletContainer = am5.Container.new(root, {});
+            var circle = bulletContainer.children.push(
+              am5.Circle.new(
+                root,
+                {
+                  radius: 34,
+                },
+                circleTemplate
+              )
+            );
+
+            var maskCircle = bulletContainer.children.push(
+              am5.Circle.new(root, { radius: 27 })
+            );
+
+            // only containers can be masked, so we add image to another container
+            var imageContainer = bulletContainer.children.push(
+              am5.Container.new(root, {
+                mask: maskCircle,
+              })
+            );
+
+            var image = imageContainer.children.push(
+              am5.Picture.new(root, {
+                templateField: "pictureSettings",
+                centerX: am5.p50,
+                centerY: am5.p50,
+                width: 60,
+                height: 60,
+              })
+            );
+
+            return am5.Bullet.new(root, {
+              locationY: 0,
+              sprite: bulletContainer,
+            });
+          });
+          //Fim do bullet
+        }
+
+```
+
+com isso agora o bullet pode ser removido e colocado novamente.
