@@ -58,6 +58,15 @@ define([
         dimensions: {
           uses: "dimensions",
           min: 0,
+          items : {
+            imagens_bullet: {
+                type: "string",
+                expression: "optional",
+                expressionType: "dimension",
+                ref: "qAttributeExpressions.0.qExpression",
+                label: "Imagens no Bullet",
+            }
+          }
         },
         measures: {
           uses: "measures",
@@ -68,42 +77,51 @@ define([
         },
         settings: {
           uses: "settings",
+          items: {
+            MyStringProp: {
+              ref: "bullet",
+              type: "boolean",
+              label: "Bullet Imagem",
+              defaultValue: false
+            }
+          }
         },
-      },
+      }
     },
     snapshot: {
       canTakeSnapshot: true,
     },
     paint: function ($element, layout) {
-      var html = '<div id ="chartdiv">Ola Mundo!</div>';
+      var html = '<div id="' + layout.qInfo.qId + '" class="amColuna_coluna">Ola Mundo!</div>';
       $element.html(html);
 
-      //console.log(layout);
-
       var numero_de_linhas = layout.qHyperCube.qDataPages[0].qMatrix.length;
-
-      // console.log("numero de linhas do qMatrix" + "=" + "" + numero_de_linhas);
-
+   
       var dados = [];
       var c = 0;
+
+      //verificar o caminho para o qText
 
       for (c = 0; c < numero_de_linhas; c++) {
         dados.push({
           name: layout.qHyperCube.qDataPages[0].qMatrix[c][0].qText,
           steps: layout.qHyperCube.qDataPages[0].qMatrix[c][1].qNum,
           pictureSettings: {
-            src: "https://media.licdn.com/dms/image/v2/D5603AQGOyw0U-nAF0g/profile-displayphoto-shrink_200_200/B56ZSzMhosGQAY-/0/1738173193170?e=1744848000&v=beta&t=uU2iIfYq57Q74PaT-NZgqPY3gOFhxj3FS_8J2Oan1QQ",
+            src: layout.qHyperCube.qDataPages[0].qMatrix[c][0].qAttrExps.qValues[0].qText,
           }
         });
       }
-
+      
+      //console.log(layout.qHyperCube.qDataPages[0].qMatrix[0][0].qAttrExps.qValues[0].qText);
+      //por algum motivo esse console.log faz o grafico nao renderizar
+      //console.log(layout.qHyperCube.qDataPages[0].qMatrix[c][0].qAttrExps.qValues[0].qText);
 
       //continue assistindo o video: a partir de 12minutos e 10 segundos https://www.youtube.com/watch?v=7bo9PSWgULA
 
       am5.ready(function () {
         // Create root element
         // https://www.amcharts.com/docs/v5/getting-started/#Root_element
-        var root = am5.Root.new("chartdiv");
+        var root = am5.Root.new(layout.qInfo.qId);
 
         // Set themes
         // https://www.amcharts.com/docs/v5/concepts/themes/
@@ -193,6 +211,8 @@ define([
           handleOut();
         });
 
+
+        
         function handleHover(dataItem) {
           if (dataItem && currentlyHovered != dataItem) {
             handleOut();
@@ -221,50 +241,53 @@ define([
 
         var circleTemplate = am5.Template.new({});
 
-        series.bullets.push(function (root, series, dataItem) {
-          var bulletContainer = am5.Container.new(root, {});
-          var circle = bulletContainer.children.push(
-            am5.Circle.new(
-              root,
-              {
-                radius: 34,
-              },
-              circleTemplate
-            )
-          );
+        if (layout.bullet) {
+          //Inicio do bullet
+          series.bullets.push(function (root, series, dataItem) {
+            var bulletContainer = am5.Container.new(root, {});
+            var circle = bulletContainer.children.push(
+              am5.Circle.new(
+                root,
+                {
+                  radius: 34,
+                },
+                circleTemplate
+              )
+            );
 
-          var maskCircle = bulletContainer.children.push(
-            am5.Circle.new(root, { radius: 27 })
-          );
+            var maskCircle = bulletContainer.children.push(
+              am5.Circle.new(root, { radius: 27 })
+            );
 
-          // only containers can be masked, so we add image to another container
-          var imageContainer = bulletContainer.children.push(
-            am5.Container.new(root, {
-              mask: maskCircle,
-            })
-          );
+            // only containers can be masked, so we add image to another container
+            var imageContainer = bulletContainer.children.push(
+              am5.Container.new(root, {
+                mask: maskCircle,
+              })
+            );
 
-          var image = imageContainer.children.push(
-            am5.Picture.new(root, {
-              templateField: "pictureSettings",
-              centerX: am5.p50,
-              centerY: am5.p50,
-              width: 60,
-              height: 60,
-            })
-          );
+            var image = imageContainer.children.push(
+              am5.Picture.new(root, {
+                templateField: "pictureSettings",
+                centerX: am5.p50,
+                centerY: am5.p50,
+                width: 60,
+                height: 60,
+              })
+            );
 
-          return am5.Bullet.new(root, {
-            locationY: 0,
-            sprite: bulletContainer,
+            return am5.Bullet.new(root, {
+              locationY: 0,
+              sprite: bulletContainer,
+            });
           });
-        });
-
+          //Fim do bullet
+        }
         // heatrule
         series.set("heatRules", [
           {
             dataField: "valueY",
-            min: am5.color(0xe5dc36),
+            min: am5.color(0x0000FF),
             max: am5.color(0x5faa46),
             target: series.columns.template,
             key: "fill",

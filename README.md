@@ -1,4 +1,4 @@
-**_Ola, Seja bem vindo ao meu projeto de incorporar gráficos do qlik sense_**
+***_Ola, Seja bem vindo ao meu projeto de incorporar gráficos do qlik sense_***
 
 É necessário ter: _Vscode_, _Qlik Sense Desktop_
 
@@ -11,7 +11,7 @@ Nesse projeto irei incorporar um gráfico de barras horizontal, utilizando a bib
 1.1 Criar uma conta no qlik page para acessar o conteúdo.
 
 1.2 Acessar o link para download Qlik Sense Desktop:
-https://community.qlik.com/t5/Download-Qlik-Products/tkb-p/Downloads?_ga=2.75487830.553878946.1697033426-1659817468.1652277878
+<https://community.qlik.com/t5/Download-Qlik-Products/tkb-p/Downloads?_ga=2.75487830.553878946.1697033426-1659817468.1652277878>
 
 1.3 Na pagina que abriu, ir no campo de **_Show Realeases_** ticar a segunda cheklist no **_All releases whith latest patch_** depois ir no campo de Realease e ticar a checklist da ultima atualização dependendo o dia de acesso, que neste caso estou buscando por november de 2024, que é a ultima atualização da patch para download do qlik sense desktop.
 
@@ -280,5 +280,178 @@ Após realizar isso, iremos criar um variavel de array vazio com o nome de dados
       }	
 ```
 
-Feito isso, os dados do qlik sense ja poderam ser aplicados no Gráfico demo AmCharts
+*Importante aqui, a variavel dados deve ser acrescentada no valor da variavel data para que podemos realizar a leitura dessas informações ao invés das informações que la estavam.
 
+![alt text](image-21.png)
+
+Feito isso, os dados do qlik sense ja poderam ser aplicados no Gráfico demo AmCharts.
+
+Iremos novamente usar o console.log(layout), para ver o que temos nas configurações, neste momento iremos usar as informações que tenham o id de nosso gráfico para que possamos criar mais deles no nosso projeto. Veja que o caminho a ser seguido é layout.qInfo.qId, para que possamos usar o id desse gráfico na extensão.
+
+![alt text](image-17.png)
+
+Para podermos modificar a div usaremos ao inves de chartdiv passaremos o caminho para o id desse gráfico, em seguida criaremos uma class para alterações no css.
+
+![alt text](image-18.png)
+
+css:
+![alt text](image-19.png)
+
+Obs.: importante lembrar que onde estiver chartdiv anteriormente, dever ser alterado para o novo caminho do gráfico utilizando o layout.qInfo.qId, dentro do arquivo de configuração amColuna.
+
+Agora o seu gráfico pode ser usado varias vezes dentro do aplicativo (ou seja, crtl c e crtl v funciona).
+
+Aqui a parte de definition usaremos uma configuração para criar uma opção na configuração da extensão chamada bullet de imagem, essa configuração permitira manipular o gráfico retirando a imagem e incluindo a imagem no gráfico apartir de um checklist dentro das configurações do gráfico do qlik sense no canto direito;
+
+![alt text](image-16.png)
+
+```javascript
+
+definition: {
+      type: "items",
+      component: "accordion",
+      items: {
+        dimensions: {
+          uses: "dimensions",
+          min: 0,
+        },
+        measures: {
+          uses: "measures",
+          min: 0,
+        },
+        sorting: {
+          uses: "sorting",
+        },
+        //aqui é a parte em que iremos adicionar para que possamos utilizar o bullet de imagem 
+        settings: {
+          uses: "settings",
+          items: {
+            MyStringProp: {
+              ref: "bullet",
+              type: "boolean",
+              label: "Bullet Imagem",
+              defaultValue: false
+            }
+          }
+        },
+      }
+    },
+```
+
+Utilizando console.log(layout.bullet), veremos que o bullet no console log aparecera true caso tenha marcado o checklist e false caso ele seja desmarcado:
+
+![alt text](image-20.png)
+
+
+
+também teremos que passar esse caminho do layout.bullet para a função de bullet que tem no arquivo de configuração do amColuna, neste caso utilizaremos uma condição para servir o bullet como no código a baixo:
+
+
+
+```javascript 
+
+
+//neste caso adicionamos o layout.bullet na condição até o final dessa marcação no amchart5
+if (layout.bullet) {
+          //Inicio do bullet
+          series.bullets.push(function (root, series, dataItem) {
+            var bulletContainer = am5.Container.new(root, {});
+            var circle = bulletContainer.children.push(
+              am5.Circle.new(
+                root,
+                {
+                  radius: 34,
+                },
+                circleTemplate
+              )
+            );
+
+            var maskCircle = bulletContainer.children.push(
+              am5.Circle.new(root, { radius: 27 })
+            );
+
+            // only containers can be masked, so we add image to another container
+            var imageContainer = bulletContainer.children.push(
+              am5.Container.new(root, {
+                mask: maskCircle,
+              })
+            );
+
+            var image = imageContainer.children.push(
+              am5.Picture.new(root, {
+                templateField: "pictureSettings",
+                centerX: am5.p50,
+                centerY: am5.p50,
+                width: 60,
+                height: 60,
+              })
+            );
+
+            return am5.Bullet.new(root, {
+              locationY: 0,
+              sprite: bulletContainer,
+            });
+          });
+          //Fim do bullet
+        }
+
+```
+
+com isso agora o bullet pode ser removido e colocado novamente.
+
+
+Iremos configurar o array de informções para configurar um campo dentro do dimensões/setor das configurações do gráfico do qlik sense para que possamos alterar a imagem por expressão do qlik, iremos colocar essas configurações em definition como na imagem:
+
+![alt text](image-22.png)
+
+utilizaremos esse código dento do escopo de items:
+
+```javascript
+items: {
+        dimensions: {
+          uses: "dimensions",
+          min: 0,
+          items : {
+            imagens_bullet: {
+                type: "string",
+                expression: "optional",
+                expressionType: "dimension",
+                ref: "qAttributeExpressions.0.qExpression",
+                label: "Imagens no Bullet",
+            }
+          }
+    },
+
+    .....
+}   
+```
+com esse código conseguiremos adicionar um campo chamado ***Imagens no Bullet*** podendo colocar condição por expressão que consegue modificar a imagem que esta no gráfico.
+
+![alt text](image-23.png)
+![alt text](image-24.png)
+
+Agora para podermos trocar a imagem do gráfico e colocar quais queremos, iremos fazer um processo e configuração no loop em nossa extensão, buscando os caminhos do layout/hypercube, para que possamos automatizar a troca pelo qlik como descrito acima, portanto devera ficar nesse formato: 
+
+```javascript
+
+  var dados = [];
+      var c = 0;
+
+      //verificar o caminho para o qText
+
+      for (c = 0; c < numero_de_linhas; c++) {
+        dados.push({
+          name: layout.qHyperCube.qDataPages[0].qMatrix[c][0].qText,
+          steps: layout.qHyperCube.qDataPages[0].qMatrix[c][1].qNum,
+          pictureSettings: {
+            src: layout.qHyperCube.qDataPages[0].qMatrix[c][0].qAttrExps.qValues[0].qText,
+          }
+        });
+      }
+
+```
+
+note que as informações que iremos colocar no array vazio no valor de dados são as essas informações que vem do qlik sense, portanto aquelas outras infomações que estavam na variavel data anteriormente colocamos nesse escopo com name, steps e pictureSettings/src isso fara com que as iformações nesse campo de Imagens do Bullet seja aplicada no gráfico de nossa extensão.
+
+
+Com isso criamos a conexão do qlik com a extensão, configuramos para que o gráfico seja usado mais de uma vez no app, colocamos funções dentro do app para que possamos tratar esse gráfico em especifico (no caso tirar a imagem ou colocar imagem com o bullet), configuramos a imagem para ser alterada por expressão com o qlik sense.
