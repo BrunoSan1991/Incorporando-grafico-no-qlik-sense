@@ -280,6 +280,10 @@ Após realizar isso, iremos criar um variavel de array vazio com o nome de dados
       }	
 ```
 
+*Importante aqui, a variavel dados deve ser acrescentada no valor da variavel data para que podemos realizar a leitura dessas informações ao invés das informações que la estavam.
+
+![alt text](image-21.png)
+
 Feito isso, os dados do qlik sense ja poderam ser aplicados no Gráfico demo AmCharts.
 
 Iremos novamente usar o console.log(layout), para ver o que temos nas configurações, neste momento iremos usar as informações que tenham o id de nosso gráfico para que possamos criar mais deles no nosso projeto. Veja que o caminho a ser seguido é layout.qInfo.qId, para que possamos usar o id desse gráfico na extensão.
@@ -394,3 +398,60 @@ if (layout.bullet) {
 ```
 
 com isso agora o bullet pode ser removido e colocado novamente.
+
+
+Iremos configurar o array de informções para configurar um campo dentro do dimensões/setor das configurações do gráfico do qlik sense para que possamos alterar a imagem por expressão do qlik, iremos colocar essas configurações em definition como na imagem:
+
+![alt text](image-22.png)
+
+utilizaremos esse código dento do escopo de items:
+
+```javascript
+items: {
+        dimensions: {
+          uses: "dimensions",
+          min: 0,
+          items : {
+            imagens_bullet: {
+                type: "string",
+                expression: "optional",
+                expressionType: "dimension",
+                ref: "qAttributeExpressions.0.qExpression",
+                label: "Imagens no Bullet",
+            }
+          }
+    },
+
+    .....
+}   
+```
+com esse código conseguiremos adicionar um campo chamado ***Imagens no Bullet*** podendo colocar condição por expressão que consegue modificar a imagem que esta no gráfico.
+
+![alt text](image-23.png)
+![alt text](image-24.png)
+
+Agora para podermos trocar a imagem do gráfico e colocar quais queremos, iremos fazer um processo e configuração no loop em nossa extensão, buscando os caminhos do layout/hypercube, para que possamos automatizar a troca pelo qlik como descrito acima, portanto devera ficar nesse formato: 
+
+```javascript
+
+  var dados = [];
+      var c = 0;
+
+      //verificar o caminho para o qText
+
+      for (c = 0; c < numero_de_linhas; c++) {
+        dados.push({
+          name: layout.qHyperCube.qDataPages[0].qMatrix[c][0].qText,
+          steps: layout.qHyperCube.qDataPages[0].qMatrix[c][1].qNum,
+          pictureSettings: {
+            src: layout.qHyperCube.qDataPages[0].qMatrix[c][0].qAttrExps.qValues[0].qText,
+          }
+        });
+      }
+
+```
+
+note que as informações que iremos colocar no array vazio no valor de dados são as essas informações que vem do qlik sense, portanto aquelas outras infomações que estavam na variavel data anteriormente colocamos nesse escopo com name, steps e pictureSettings/src isso fara com que as iformações nesse campo de Imagens do Bullet seja aplicada no gráfico de nossa extensão.
+
+
+Com isso criamos a conexão do qlik com a extensão, configuramos para que o gráfico seja usado mais de uma vez no app, colocamos funções dentro do app para que possamos tratar esse gráfico em especifico (no caso tirar a imagem ou colocar imagem com o bullet), configuramos a imagem para ser alterada por expressão com o qlik sense.

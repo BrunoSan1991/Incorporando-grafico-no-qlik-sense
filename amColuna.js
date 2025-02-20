@@ -96,21 +96,24 @@ define([
       $element.html(html);
 
       var numero_de_linhas = layout.qHyperCube.qDataPages[0].qMatrix.length;
-
    
       var dados = [];
       var c = 0;
+
+      //verificar o caminho para o qText
 
       for (c = 0; c < numero_de_linhas; c++) {
         dados.push({
           name: layout.qHyperCube.qDataPages[0].qMatrix[c][0].qText,
           steps: layout.qHyperCube.qDataPages[0].qMatrix[c][1].qNum,
           pictureSettings: {
-            src: "https://br.web.img3.acsta.net/r_654_368/newsv7/19/02/08/16/58/1140437.jpg",
+            src: layout.qHyperCube.qDataPages[0].qMatrix[c][0].qAttrExps.qValues[0].qText,
           }
         });
       }
-    
+      
+      //console.log(layout.qHyperCube.qDataPages[0].qMatrix[0][0].qAttrExps.qValues[0].qText);
+      //por algum motivo esse console.log faz o grafico nao renderizar
       //console.log(layout.qHyperCube.qDataPages[0].qMatrix[c][0].qAttrExps.qValues[0].qText);
 
       //continue assistindo o video: a partir de 12minutos e 10 segundos https://www.youtube.com/watch?v=7bo9PSWgULA
